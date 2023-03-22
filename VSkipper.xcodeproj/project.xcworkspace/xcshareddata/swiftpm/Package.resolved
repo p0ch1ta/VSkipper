@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "chromaswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/wallisch/ChromaSwift",
+      "state" : {
+        "branch" : "master",
+        "revision" : "64bc549b3f477c3d3366ba401c95a12bf2a6115b"
+      }
+    },
+    {
+      "identity" : "xmlcoder",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/CoreOffice/XMLCoder.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c10bb50cbfe1655808cd68fc0ed36142ba3b7504"
+      }
+    }
+  ],
+  "version" : 2
+}
