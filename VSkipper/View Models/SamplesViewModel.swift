@@ -49,7 +49,7 @@ class SamplesViewModel: ObservableObject {
             throw SamplesError.emptyInputPath
         }
 
-        if !path.hasSuffix(APP.FileExtension.m4a) {
+        if !path.hasSuffix(APP.FileExtension.mkv) {
             throw SamplesError.incorrectFileExtension
         }
 
