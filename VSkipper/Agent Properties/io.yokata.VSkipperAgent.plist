@@ -11,10 +11,6 @@
         <string>Contents/MacOS/VSkipperAgent</string>
         <key>RunAtLoad</key>
         <true/>
-        <key>StandardOutPath</key>
-        <string>/Users/nv-mac/Documents/VSkipper/AgentLog/IntroSkipAgent.stdout</string>
-        <key>StandardErrorPath</key>
-        <string>/Users/nv-mac/Documents/VSkipper/AgentLog/IntroSkipAgent.stderr</string>
         <key>StartInterval</key>
         <integer>1</integer>
         <key>ThrottleInterval</key>
