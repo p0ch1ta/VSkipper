@@ -42,7 +42,7 @@ struct APP {
     }
 
     struct Samples {
-        static let duration = 4
+        static let duration = 3
     }
 
     struct Scan {

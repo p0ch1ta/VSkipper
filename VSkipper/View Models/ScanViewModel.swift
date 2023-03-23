@@ -123,7 +123,7 @@ class ScanViewModel: ObservableObject {
                         stopTime: introScanEnd,
                         fingerprint: introFingerprint
                     )
-                    playlistFile.introTime = time - APP.Samples.duration + 1
+                    playlistFile.introTime = time
                 }
                 if scanMode == .outro || scanMode == .both {
                     let time = try getFingerprintTime(
@@ -133,7 +133,7 @@ class ScanViewModel: ObservableObject {
                         stopTime: 999999,
                         fingerprint: outroFingerprint
                     )
-                    playlistFile.outroTime = time + outroScanStart - APP.Samples.duration + 1
+                    playlistFile.outroTime = time + outroScanStart
                 }
                 configEntries.append(playlistFile)
                 DispatchQueue.main.async {
