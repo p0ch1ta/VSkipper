@@ -12,6 +12,8 @@ class AppViewModel: ObservableObject {
 
     @Published var agentRunning: Bool = false
 
+    @Published var agentStatus: SMAppService.Status = .notFound
+
     @Published var selectedSaveFile: SkipSaveFile = SkipSaveFile(rawValue: "")!
 
     let savesURL: URL
@@ -23,6 +25,14 @@ class AppViewModel: ObservableObject {
         savesURL = applicationSupportUrl.appendingPathComponent("\(bundleID)/\(APP.PathName.saves)", isDirectory: true)
 
         refreshSaves()
+        refreshAgentStatus()
+    }
+
+    func refreshAgentStatus() {
+        let agent = SMAppService.agent(plistName: APP.Agent.name)
+        DispatchQueue.main.async {
+            self.agentStatus = agent.status
+        }
     }
 
     func refreshSaves() {
@@ -47,34 +57,50 @@ class AppViewModel: ObservableObject {
         }
     }
 
-    func startAgent() async throws {
-        try createConfigForAgent()
+    func registerAgent() async throws {
         let agent = SMAppService.agent(plistName: APP.Agent.name)
-        if agent.status != .enabled {
-            try agent.register()
-        }
-        DispatchQueue.main.async { [self] in
-            agentRunning = true
-            iconColor = .green
-        }
+        try agent.register()
+        refreshAgentStatus()
     }
 
-    func stopAgent() async throws {
+    func unregisterAgent() async throws {
         let agent = SMAppService.agent(plistName: APP.Agent.name)
         try await agent.unregister()
-        DispatchQueue.main.async { [self] in
-            agentRunning = false
-            iconColor = .gray
+        refreshAgentStatus()
+    }
+
+    func startSkipper() throws {
+        if agentStatus != .enabled {
+            throw AppError.agentNotRegistered
+        }
+        try sendDataToAgent(messageID: 1, data: createConfigForAgent())
+        DispatchQueue.main.async {
+            self.agentRunning = true
+            self.iconColor = .green
         }
     }
 
-    private func createConfigForAgent() throws {
-        let path = savesURL.deletingLastPathComponent().appendingPathComponent(APP.PathName.config, isDirectory: true)
-        if !FileManager.default.fileExists(atPath: path.path(percentEncoded: false)) {
-            try FileManager.default.createDirectory(at: path, withIntermediateDirectories: true, attributes: nil)
+    func stopSkipper() throws {
+        try sendDataToAgent(messageID: 0, data: Data())
+        DispatchQueue.main.async {
+            self.agentRunning = false
+            self.iconColor = .gray
         }
-        let fileURL = path.appendingPathComponent(APP.FileName.config)
+    }
 
+    private func sendDataToAgent(messageID: Int32, data: Data) throws {
+        guard let serverPort = CFMessagePortCreateRemote(nil, APP.Agent.portName as CFString) else {
+            throw AppError.agentNotRunning
+        }
+        let bytes: [UInt8] = data.bytes
+        let data = CFDataCreate(nil, bytes, bytes.count)
+        let sendResult = CFMessagePortSendRequest(serverPort, messageID, data, 1.0, 1.0, nil, nil);
+        if sendResult != Int32(kCFMessagePortSuccess) {
+            throw AppError.agentMessageFailed
+        }
+    }
+
+    private func createConfigForAgent() throws -> Data {
         let introDuration = defaults.integer(forKey: SettingsKey.introDuration.rawValue)
         let outroDuration = defaults.integer(forKey: SettingsKey.outroDuration.rawValue)
         let vlcPort = defaults.integer(forKey: SettingsKey.vlcPort.rawValue)
@@ -93,10 +119,7 @@ class AppViewModel: ObservableObject {
                                 entries: entries)
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-
-        let data = try encoder.encode(config)
-        try data.write(to: fileURL)
+        return try encoder.encode(config)
     }
 
 }

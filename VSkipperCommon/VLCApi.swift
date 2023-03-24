@@ -121,6 +121,37 @@ class VLCApi {
         return decodedFileName
     }
 
+    func getCurrentTimeWithFilename() throws -> (Int, String) {
+        let request = getURLRequestWithAuthorization(params: [])
+
+        let session = URLSession.shared
+
+        let (data, _, _) = session.synchronousDataTask(request: request)
+
+        guard let data = data else {
+            throw VLCError.noData
+        }
+
+        let decoder = XMLDecoder()
+        let response = try? decoder.decode(VLCResponse.self, from: data)
+
+        guard let response = response else {
+            throw VLCError.decodingError
+        }
+
+        let category = response.information.category.first(where: { $0.name == "meta" })
+        let info = category?.info.first(where: { $0.name == "filename" })
+        guard let fileName = info?.value else {
+            throw VLCError.decodingError
+        }
+
+        guard let decodedFileName = fileName.decodeHTMLSymbols() else {
+            throw VLCError.decodingError
+        }
+
+        return (response.time, decodedFileName)
+    }
+
     private func getURLRequestWithAuthorization(params: [URLQueryItem]) -> URLRequest {
 
         var resultURL = url

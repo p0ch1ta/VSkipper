@@ -6,6 +6,7 @@ struct APP {
 
     struct Agent {
         static let name = "io.yokata.VSkipperAgent.plist"
+        static let portName = "io.yokata.VSkipperAgent"
     }
 
     struct Placeholder {

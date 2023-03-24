@@ -24,13 +24,11 @@ struct MenuBarView: View {
         if appViewModel.agentRunning {
             Divider()
             Button {
-                Task {
-                    do {
-                        try await appViewModel.stopAgent()
-                    } catch {
-                        alertMessage = error.localizedDescription
-                        alert = true
-                    }
+                do {
+                    try appViewModel.stopSkipper()
+                } catch {
+                    alertMessage = error.localizedDescription
+                    alert = true
                 }
             } label: {
                 Text("Stop skipper")
@@ -65,6 +63,12 @@ struct MenuBarView: View {
         }
         Divider()
         Button {
+            do {
+                try appViewModel.stopSkipper()
+            } catch {
+                alertMessage = error.localizedDescription
+                alert = true
+            }
             NSApplication.shared.terminate(self)
         } label: {
             Text("Quit")

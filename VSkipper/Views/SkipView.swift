@@ -20,6 +20,32 @@ struct SkipView: View {
                     }.padding(.vertical)
                     Divider()
                     HStack {
+                        Text("Agent status")
+                        Spacer()
+                        Text(appViewModel.agentStatus.name).foregroundColor(.gray)
+                    }.padding(.vertical)
+                    Divider()
+                    HStack {
+                        Spacer()
+                        Button {
+                            Task {
+                                do {
+                                    if appViewModel.agentStatus == .enabled {
+                                        try await appViewModel.unregisterAgent()
+                                    } else {
+                                        try await appViewModel.registerAgent()
+                                    }
+                                } catch {
+                                    alertMessage = error.localizedDescription
+                                    alert = true
+                                }
+                            }
+                        } label: {
+                            Text(appViewModel.agentStatus != .enabled ? "Enable" : "Disable")
+                        }
+                    }.padding(.vertical)
+                    Divider()
+                    HStack {
                         Text("Configuration")
                         Spacer()
                         if appViewModel.selectedSaveFile.rawValue.isEmpty {
@@ -45,14 +71,12 @@ struct SkipView: View {
                     Text("Close")
                 }
                 Button {
-                    Task {
-                        do {
-                            try await appViewModel.startAgent()
-                            NSApplication.shared.keyWindow?.close()
-                        } catch {
-                            alertMessage = error.localizedDescription
-                            alert = true
-                        }
+                    do {
+                        try appViewModel.startSkipper()
+                        NSApplication.shared.keyWindow?.close()
+                    } catch {
+                        alertMessage = error.localizedDescription
+                        alert = true
                     }
                 } label: {
                     Text("Start")

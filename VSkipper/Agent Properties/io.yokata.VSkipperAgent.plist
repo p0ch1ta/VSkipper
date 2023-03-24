@@ -11,9 +11,10 @@
         <string>Contents/MacOS/VSkipperAgent</string>
         <key>RunAtLoad</key>
         <true/>
-        <key>StartInterval</key>
-        <integer>1</integer>
-        <key>ThrottleInterval</key>
-        <integer>0</integer>
+        <key>MachServices</key>
+        <dict>
+            <key>io.yokata.VSkipperAgent</key>
+            <true/>
+        </dict>
     </dict>
 </plist>
