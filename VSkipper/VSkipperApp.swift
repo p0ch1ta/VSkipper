@@ -16,54 +16,25 @@ struct VSkipperApp: App {
         }
         Window("Settings", id: "settings") {
             SettingsView()
-                .onAppear {
-                    DispatchQueue.main.async {
-                        NSApplication.shared.windows.forEach { window in
-                            window.standardWindowButton(.zoomButton)?.isEnabled = false
-                            window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
-                        }
-                        NSApplication.shared.activate(ignoringOtherApps: true)
-                    }
-                }.fixedSize(horizontal: false, vertical: true)
+                .onlyCloseButton()
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)
         }.windowResizability(.contentSize)
         Window("Select samples", id: "samples") {
             SamplesView()
-                .onAppear {
-                    DispatchQueue.main.async {
-                        NSApplication.shared.windows.forEach { window in
-                            window.standardWindowButton(.zoomButton)?.isEnabled = false
-                            window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
-                        }
-                        NSApplication.shared.activate(ignoringOtherApps: true)
-                    }
-                }.fixedSize(horizontal: false, vertical: true)
+                .onlyCloseButton()
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)
         }.windowResizability(.contentSize)
         Window("Scan playlist", id: "scan") {
             ScanView()
-                .onAppear {
-                    DispatchQueue.main.async {
-                        NSApplication.shared.windows.forEach { window in
-                            window.standardWindowButton(.zoomButton)?.isEnabled = false
-                            window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
-                        }
-                        NSApplication.shared.activate(ignoringOtherApps: true)
-                    }
-                }.fixedSize(horizontal: false, vertical: true)
+                .onlyCloseButton()
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)
         }.windowResizability(.contentSize)
         Window("Start skipper", id: "skip") {
             SkipView(appViewModel: appViewModel)
-                .onAppear {
-                    DispatchQueue.main.async {
-                        NSApplication.shared.windows.forEach { window in
-                            window.standardWindowButton(.zoomButton)?.isEnabled = false
-                            window.standardWindowButton(.miniaturizeButton)?.isEnabled = false
-                        }
-                        NSApplication.shared.activate(ignoringOtherApps: true)
-                    }
-                }
+                .onlyCloseButton()
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)
         }.windowResizability(.contentSize)
