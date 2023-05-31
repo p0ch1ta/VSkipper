@@ -3,6 +3,15 @@
 import Foundation
 
 struct APP {
+    
+    struct UserDefaults {
+        static let currentIntroFile = "currentIntroFile"
+        static let currentOutroFile = "currentOutroFile"
+        static let introDuration = "introDuration"
+        static let outroDuration = "outroDuration"
+        static let vlcPassword = "vlcPassword"
+        static let vlcPort = "vlcPort"
+    }
 
     struct Agent {
         static let name = "io.yokata.VSkipperAgent.plist"
@@ -17,6 +26,7 @@ struct APP {
 
     struct FileName {
         static let config = "config.json"
+        static let samples = "samples.json"
         static let dsStore = ".DS_Store"
         static let introSample = "intro-sample.m4a"
         static let outroSample = "outro-sample.m4a"
@@ -40,6 +50,14 @@ struct APP {
 
     struct Path {
         static let vlcExecutable = "Contents/MacOS/VLC"
+        static let ffprobeExecutable = "/usr/local/bin/ffprobe"
+        static let ffmpegExecutable = "/usr/local/bin/ffmpeg"
+    }
+
+    struct VLC {
+        static let url = "http://127.0.0.1"
+        static let port = 8080
+        static let statusPath = "/requests/status.xml"
     }
 
     struct Samples {
@@ -47,7 +65,7 @@ struct APP {
     }
 
     struct Scan {
-        static let minSimilarity = 0.82
+        static let minSimilarity = 0.80
         static let maxSampleTime = 60
     }
 

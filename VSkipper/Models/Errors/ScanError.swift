@@ -9,6 +9,7 @@ enum ScanError: Error {
     case playlistPathInvalid
     case fingerprintComparisonFailed
     case noFilesToProcess
+    case sampleScanFromTimeIsOutOfBounds
 }
 
 extension ScanError: LocalizedError {
@@ -26,6 +27,8 @@ extension ScanError: LocalizedError {
             return NSLocalizedString("Fingerprint comparison failed", comment: "Fingerprint comparison failed")
         case .noFilesToProcess:
             return NSLocalizedString("No files to process", comment: "No files to process")
+        case .sampleScanFromTimeIsOutOfBounds:
+            return NSLocalizedString("Sample scan from time is out of bounds", comment: "Sample scan from time is out of bounds")
         }
     }
 }

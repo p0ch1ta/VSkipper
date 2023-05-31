@@ -2,7 +2,7 @@
 
 import Foundation
 
-enum SampleType: String, PickerSelectable {
+enum SampleType: String, PickerSelectable, Codable {
     case intro = "intro-sample"
     case outro = "outro-sample"
 

@@ -4,12 +4,15 @@ import SwiftUI
 
 struct SamplesView: View {
 
-    @StateObject var samplesViewModel = SamplesViewModel()
+    @EnvironmentObject var sampleStore: SampleStore
 
     @State private var alert = false
     @State private var alertMessage = ""
 
     @State private var buttonHidden = true
+    @State private var durationButtonHidden = true
+    @State private var scanFromTimeButtonHidden = true
+    @State private var scanToTimeButtonHidden = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -17,7 +20,7 @@ struct SamplesView: View {
                 Group {
                     VStack(spacing: 0) {
                         HStack {
-                            Text("Sample")
+                            Text("Sample file")
                                 .fontWeight(.bold)
                             Spacer()
                         }.padding(.vertical)
@@ -25,13 +28,56 @@ struct SamplesView: View {
                         HStack {
                             Text("File path")
                             Spacer()
-                            TextWithPopover(text: samplesViewModel.path)
+                            TextWithPopover(text: sampleStore.newSample.sourceFilePath)
                         }.padding(.vertical)
                         Divider()
                         HStack {
                             Text("Select file")
                             Spacer()
-                            FilePicker(path: $samplesViewModel.path, mode: .file)
+                            FilePicker(path: $sampleStore.newSample.sourceFilePath, mode: .file)
+                        }.padding(.vertical)
+                        Divider()
+                        HStack {
+                            Text("Series path")
+                            Spacer()
+                            TextWithPopover(text: sampleStore.newSample.targetPlaylistPath)
+                        }.padding(.vertical)
+                        Divider()
+                        HStack {
+                            Text("Select path")
+                            Spacer()
+                            FilePicker(path: $sampleStore.newSample.targetPlaylistPath, mode: .directory)
+                        }.padding(.vertical)
+                    }.padding(.horizontal)
+                     .overlay(
+                         RoundedRectangle(cornerRadius: 6)
+                             .stroke(.gray, lineWidth: 1)
+                             .opacity(0.15)
+                     )
+                }.padding(.bottom)
+
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("Sample settings")
+                            .fontWeight(.bold)
+                        Spacer()
+                    }.padding(.vertical)
+                    Divider()
+                    Group {
+                        HStack {
+                            Text("Name")
+                            Spacer()
+                            TextField("Sample", text: $sampleStore.newSample.name)
+                                .fixedSize()
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding(.vertical, 2)
+                                .multilineTextAlignment(.trailing)
+                        }.padding(.vertical)
+                        Divider()
+                        HStack {
+                            Text("Type")
+                            Spacer()
+                            FixedPicker(selection: $sampleStore.newSample.type)
                         }.padding(.vertical)
                         Divider()
                         HStack {
@@ -40,17 +86,20 @@ struct SamplesView: View {
                             if !buttonHidden {
                                 Button {
                                     NSApp.keyWindow?.makeFirstResponder(nil)
-                                    do {
-                                        try samplesViewModel.getStartTime()
-                                    } catch {
-                                        alertMessage = error.localizedDescription
-                                        alert = true
+                                    Task {
+                                        do {
+                                            buttonHidden = true
+                                            try await $sampleStore.newSample.getStartTimeFromVLC()
+                                        } catch {
+                                            alertMessage = error.localizedDescription
+                                            alert = true
+                                        }
                                     }
                                 } label: {
                                     Text("Get time")
                                 }
                             }
-                            TextField("", value: $samplesViewModel.startTime, formatter: NumberFormatter())
+                            TextField("", value: $sampleStore.newSample.startTime, formatter: NumberFormatter())
                                 .fixedSize()
                                 .textFieldStyle(PlainTextFieldStyle())
                                 .padding(.vertical, 2)
@@ -66,46 +115,123 @@ struct SamplesView: View {
                          }
                         Divider()
                         HStack {
-                            Text("Type")
+                            Text("Duration")
                             Spacer()
-                            FixedPicker(selection: $samplesViewModel.sampleType)
-                        }.padding(.vertical)
-                    }.padding(.horizontal)
-                     .overlay(
-                         RoundedRectangle(cornerRadius: 6)
-                             .stroke(.gray, lineWidth: 1)
-                             .opacity(0.15)
-                     )
-                }.padding(.bottom)
-
-                VStack(spacing: 0) {
-                    HStack {
-                        Text("Sample files")
-                            .fontWeight(.bold)
-                        Spacer()
-                    }.padding(.vertical)
-                    Divider()
-                    Group {
-                        HStack {
-                            Text("Intro sample path")
-                            Spacer()
-                            TextWithPopover(text: samplesViewModel.introPath)
-                        }.padding(.vertical)
-                        Divider()
-                        HStack {
-                            Text("Outro sample path")
-                            Spacer()
-                            TextWithPopover(text: samplesViewModel.outroPath)
-                        }.padding(.vertical)
-                        Divider()
-                        HStack {
-                            Spacer()
-                            Button {
-                                NSWorkspace.shared.open(samplesViewModel.samplesDirectoryURL)
-                            } label: {
-                                Text("Open in finder")
+                            if !durationButtonHidden {
+                                Button {
+                                    NSApp.keyWindow?.makeFirstResponder(nil)
+                                    Task {
+                                        do {
+                                            durationButtonHidden = true
+                                            try await $sampleStore.newSample.getDurationStartTimeFromVLC()
+                                        } catch {
+                                            alertMessage = error.localizedDescription
+                                            alert = true
+                                        }
+                                    }
+                                } label: {
+                                    Text("Get start time")
+                                }
+                                Button {
+                                    NSApp.keyWindow?.makeFirstResponder(nil)
+                                    Task {
+                                        do {
+                                            durationButtonHidden = true
+                                            try await $sampleStore.newSample.getDurationEndTimeFromVLCAndCalculate()
+                                        } catch {
+                                            alertMessage = error.localizedDescription
+                                            alert = true
+                                        }
+                                    }
+                                } label: {
+                                    Text("Get end time & calculate")
+                                }
                             }
+                            TextField("", value: $sampleStore.newSample.duration, formatter: NumberFormatter())
+                                .fixedSize()
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding(.vertical, 2)
+                                .multilineTextAlignment(.trailing)
                         }.padding(.vertical)
+                         .onContinuousHover { phase in
+                             switch phase {
+                             case .active(_):
+                                 durationButtonHidden = false
+                             case .ended:
+                                 durationButtonHidden = true
+                             }
+                         }
+                        Group {
+
+                            Divider()
+                            HStack {
+                                Text("Scan from time")
+                                Spacer()
+                                if !scanFromTimeButtonHidden {
+                                    Button {
+                                        NSApp.keyWindow?.makeFirstResponder(nil)
+                                        Task {
+                                            do {
+                                                scanFromTimeButtonHidden = true
+                                                try await $sampleStore.newSample.getScanFromTimeFromVLC()
+                                            } catch {
+                                                alertMessage = error.localizedDescription
+                                                alert = true
+                                            }
+                                        }
+                                    } label: {
+                                        Text("Get time")
+                                    }
+                                }
+                                TextField("", value: $sampleStore.newSample.scanFrom, formatter: NumberFormatter())
+                                    .fixedSize()
+                                    .textFieldStyle(PlainTextFieldStyle())
+                                    .padding(.vertical, 2)
+                                    .multilineTextAlignment(.trailing)
+                            }.padding(.vertical)
+                             .onContinuousHover { phase in
+                                 switch phase {
+                                 case .active(_):
+                                     scanFromTimeButtonHidden = false
+                                 case .ended:
+                                     scanFromTimeButtonHidden = true
+                                 }
+                             }
+                            Divider()
+                            HStack {
+                                Text("Scan to time")
+                                Spacer()
+                                if !scanToTimeButtonHidden {
+                                    Button {
+                                        NSApp.keyWindow?.makeFirstResponder(nil)
+                                        Task {
+                                            do {
+                                                scanToTimeButtonHidden = true
+                                                try await $sampleStore.newSample.getScanToTimeFromVLC()
+                                            } catch {
+                                                alertMessage = error.localizedDescription
+                                                alert = true
+                                            }
+                                        }
+                                    } label: {
+                                        Text("Get time")
+                                    }
+                                }
+                                TextField("", value: $sampleStore.newSample.scanTo, formatter: NumberFormatter())
+                                    .fixedSize()
+                                    .textFieldStyle(PlainTextFieldStyle())
+                                    .padding(.vertical, 2)
+                                    .multilineTextAlignment(.trailing)
+                            }.padding(.vertical)
+                             .onContinuousHover { phase in
+                                 switch phase {
+                                 case .active(_):
+                                     scanToTimeButtonHidden = false
+                                 case .ended:
+                                     scanToTimeButtonHidden = true
+                                 }
+                             }
+                        }
                     }
                 }.padding(.horizontal)
                  .overlay(
@@ -124,13 +250,15 @@ struct SamplesView: View {
                     Text("Close")
                 }
                 Button {
-                    do {
-                        try samplesViewModel.saveSample()
-                        alertMessage = "Saved"
-                    } catch {
-                        alertMessage = error.localizedDescription
+                    Task {
+                        do {
+                            try await sampleStore.saveNewSample()
+                            NSApplication.shared.keyWindow?.close()
+                        } catch {
+                            alertMessage = error.localizedDescription
+                            alert = true
+                        }
                     }
-                    alert = true
                 } label: {
                     Text("Save")
                 }.keyboardShortcut(.defaultAction)

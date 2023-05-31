@@ -4,7 +4,9 @@ import SwiftUI
 
 struct ScanView: View {
 
-    @StateObject var scanViewModel = ScanViewModel()
+    //@StateObject var scanViewModel = ScanViewModel()
+
+    @StateObject var scanStore = ScanStore()
 
     @State private var alert = false
     @State private var alertMessage = ""
@@ -22,21 +24,20 @@ struct ScanView: View {
                     HStack {
                         Text("Playlist path")
                         Spacer()
-                        TextWithPopover(text: scanViewModel.playlistPath)
+                        TextWithPopover(text: scanStore.playlistPath)
                     }.padding(.vertical)
                     Divider()
                     HStack {
                         Text("Select path")
                         Spacer()
-                        FilePicker(path: $scanViewModel.playlistPath, mode: .directory)
-                            .disabled(scanViewModel.getStatus() == .processing)
+                        FilePicker(path: $scanStore.playlistPath, mode: .directory)
+                            .disabled(scanStore.getStatus() == .processing)
                     }.padding(.vertical)
                     Divider()
                     HStack {
-                        Text("Scan type")
+                        Text("Samples count")
                         Spacer()
-                        FixedPicker(selection: $scanViewModel.scanMode)
-                            .disabled(scanViewModel.getStatus() == .processing)
+                        Text("\(scanStore.samples.count)")
                     }.padding(.vertical)
                 }.padding(.horizontal)
                  .overlay(
@@ -44,7 +45,7 @@ struct ScanView: View {
                          .stroke(.gray, lineWidth: 1)
                          .opacity(0.15)
                  )
-                ScanViewProgressInfo(scanViewModel: scanViewModel)
+                ScanViewProgressInfo(scanStore: scanStore)
                 VStack(spacing: 0) {
                     HStack {
                         Text("Saved config info")
@@ -56,16 +57,16 @@ struct ScanView: View {
                         HStack {
                             Text("File directory")
                             Spacer()
-                            TextWithPopover(text: scanViewModel.savesPath)
+                            TextWithPopover(text: scanStore.savesPath)
                         }.padding(.vertical)
                         Divider()
                         HStack {
                             Spacer()
                             Button {
-                                NSWorkspace.shared.open(scanViewModel.savesURL)
+                                //NSWorkspace.shared.open()
                             } label: {
                                 Text("Open in finder")
-                            }.disabled(scanViewModel.savesPath.isEmpty)
+                            }.disabled(scanStore.savesPath.isEmpty)
                         }.padding(.vertical)
                     }
                 }.padding(.horizontal)
@@ -87,7 +88,7 @@ struct ScanView: View {
                 Button {
                     Task {
                         do {
-                            try await scanViewModel.scanPlaylist()
+                            try await scanStore.scanPlaylist()
                         } catch {
                             alertMessage = error.localizedDescription
                             alert = true
@@ -96,7 +97,7 @@ struct ScanView: View {
                 } label: {
                     Text("Scan")
                 }.keyboardShortcut(.defaultAction)
-                 .disabled(scanViewModel.getStatus() == .processing)
+                 .disabled(scanStore.getStatus() == .processing)
                  .alert(alertMessage, isPresented: $alert, actions: {
                      Button("OK", role: .cancel) {
                          alert = false

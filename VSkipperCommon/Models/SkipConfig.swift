@@ -14,4 +14,6 @@ struct SkipConfigEntry: Codable {
     let name: String
     let introTime: Int
     let outroTime: Int
+    let introDuration: Int
+    let outroDuration: Int
 }

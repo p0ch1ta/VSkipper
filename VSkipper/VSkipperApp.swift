@@ -7,6 +7,8 @@ struct VSkipperApp: App {
 
     @StateObject var appViewModel = AppViewModel()
 
+    @StateObject var sampleStore = SampleStore()
+
     var body: some Scene {
         MenuBarExtra {
             MenuBarView(appViewModel: appViewModel)
@@ -20,8 +22,9 @@ struct VSkipperApp: App {
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)
         }.windowResizability(.contentSize)
-        Window("Select samples", id: "samples") {
+        Window("Add sample", id: "sample") {
             SamplesView()
+                .environmentObject(sampleStore)
                 .onlyCloseButton()
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)
@@ -34,6 +37,19 @@ struct VSkipperApp: App {
         }.windowResizability(.contentSize)
         Window("Start skipper", id: "skip") {
             SkipView(appViewModel: appViewModel)
+                .onlyCloseButton()
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: 600)
+        }.windowResizability(.contentSize)
+        Window("Samples list", id: "samplesList") {
+            SamplesListView()
+                .environmentObject(sampleStore)
+                .onlyCloseButton()
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(width: 600)
+        }.windowResizability(.contentSize)
+        Window("Chapters", id: "chapters") {
+            ChaptersView()
                 .onlyCloseButton()
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)

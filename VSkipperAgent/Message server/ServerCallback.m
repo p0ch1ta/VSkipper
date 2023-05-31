@@ -16,7 +16,7 @@ static CFDataRef ServerCallback(CFMessagePortRef local, SInt32 msgid, CFDataRef 
     }
 }
 
-CFMessagePortCallBack GetServerCallback() {
+CFMessagePortCallBack GetServerCallback(void) {
     return ServerCallback;
 }
 

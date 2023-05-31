@@ -38,12 +38,20 @@ struct MenuBarView: View {
         }
         Divider()
         Button {
-            openWindow(id: "samples")
+            openWindow(id: "samplesList")
             DispatchQueue.main.async {
                 NSApplication.shared.activate(ignoringOtherApps: true)
             }
         } label: {
-            Text("Select samples")
+            Text("Samples list")
+        }
+        Button {
+            openWindow(id: "chapters")
+            DispatchQueue.main.async {
+                NSApplication.shared.activate(ignoringOtherApps: true)
+            }
+        } label: {
+            Text("Chapters")
         }
         Button {
             openWindow(id: "scan")

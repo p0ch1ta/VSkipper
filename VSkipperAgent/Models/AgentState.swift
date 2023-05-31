@@ -60,10 +60,10 @@ class AgentState {
             }
             if skipStatus == .intro {
                 let skipTime = file.introTime
-                if skipTime > 0 {
+                if skipTime > -1 {
                     logger.debug("Status: intro, VLC time: \(time)s, skip at: \(skipTime)s")
                     if (skipTime...(skipTime + 1)).contains(time) {
-                        vlcApi.skipForward(seconds: introDuration)
+                        vlcApi.skipForward(seconds: file.introDuration)
                         skipStatus = .outro
                         logger.debug("Status changed: outro, VLC time: \(time)s, skip at: \(skipTime)")
                     }
@@ -74,10 +74,10 @@ class AgentState {
             }
             if skipStatus == .outro {
                 let skipTime = file.outroTime
-                if skipTime > 0 {
+                if skipTime > -1 {
                     logger.debug("Status: outro, VLC time: \(time)s, skip at: \(skipTime)")
                     if (skipTime...(skipTime + 1)).contains(time) {
-                        vlcApi.skipForward(seconds: outroDuration)
+                        vlcApi.skipForward(seconds: file.outroDuration)
                         skipStatus = .idle
                         logger.debug("Status changed: idle, VLC time: \(time)s, skip at: \(skipTime)")
                     }

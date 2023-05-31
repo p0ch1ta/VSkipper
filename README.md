@@ -1,6 +1,9 @@
 <!--suppress ALL -->
 <h1 align="center">VSkipper</h1>
 <p align="center">
+<img src="https://raw.githubusercontent.com/p0ch1ta/VSkipper/main/VSkipper/Assets.xcassets/AppIcon.appiconset/Icon-128.png">
+</p>
+<p align="center">
 <img src="https://img.shields.io/badge/macOS-%3E%3D%2013-orange"/>
 </p>
 

@@ -4,7 +4,8 @@ import SwiftUI
 
 struct ScanViewProgressInfo: View {
 
-    @StateObject var scanViewModel: ScanViewModel
+    //@StateObject var scanViewModel: ScanViewModel
+    @StateObject var scanStore: ScanStore
 
     var body: some View {
         VStack(spacing: 0) {
@@ -16,10 +17,10 @@ struct ScanViewProgressInfo: View {
                 }.padding(.vertical)
                 Divider()
                 HStack {
-                    ProgressView(value: Float(scanViewModel.filesProcessed),
-                                 total: Float(scanViewModel.totalFiles == 0 ? 1 : scanViewModel.totalFiles),
+                    ProgressView(value: Float(scanStore.filesProcessed),
+                                 total: Float(scanStore.totalFiles == 0 ? 1 : scanStore.totalFiles),
                                  label: {
-                                     Text(scanViewModel.getStatus().rawValue)
+                                     Text(scanStore.getStatus().rawValue)
                     })
                 }.padding(.vertical)
                 Divider()
@@ -27,26 +28,32 @@ struct ScanViewProgressInfo: View {
                     HStack {
                         Text("Files")
                         Spacer()
-                        Text("\(scanViewModel.filesProcessed)/\(scanViewModel.totalFiles)")
+                        Text("\(scanStore.filesProcessed)/\(scanStore.totalFiles)")
                             .foregroundColor(.gray)
                     }.padding(.vertical)
                     Divider()
                     HStack {
                         Text("Current file")
                         Spacer()
-                        Text(scanViewModel.currentFilename).foregroundColor(.gray)
+                        Text(scanStore.currentFilename).foregroundColor(.gray)
+                    }.padding(.vertical)
+                    Divider()
+                    HStack {
+                        Text("Current sample")
+                        Spacer()
+                        Text(scanStore.currentSampleName).foregroundColor(.gray)
                     }.padding(.vertical)
                     Divider()
                     HStack {
                         Text("Similarity")
                         Spacer()
-                        Text(scanViewModel.currentSimilarity).foregroundColor(.gray)
+                        Text(scanStore.currentSimilarity).foregroundColor(.gray)
                     }.padding(.vertical)
                     Divider()
                     HStack {
                         Text("Iteration")
                         Spacer()
-                        Text("\(scanViewModel.currentIteration)").foregroundColor(.gray)
+                        Text("\(scanStore.currentIteration)").foregroundColor(.gray)
                     }.padding(.vertical)
                 }
             }.padding(.horizontal)
@@ -61,6 +68,6 @@ struct ScanViewProgressInfo: View {
 
 struct ScanViewProgressInfo_Previews: PreviewProvider {
     static var previews: some View {
-        ScanViewProgressInfo(scanViewModel: ScanViewModel())
+        ScanViewProgressInfo(scanStore: ScanStore())
     }
 }
