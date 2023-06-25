@@ -16,7 +16,7 @@ struct MenuBarView: View {
             openWindow(id: "skip")
             DispatchQueue.main.async {
                 NSApplication.shared.activate(ignoringOtherApps: true)
-                appViewModel.refreshSaves()
+                //appViewModel.refreshSaves()
             }
         } label: {
             Text(appViewModel.agentRunning ? "Skipper is running" : "Start skipper")

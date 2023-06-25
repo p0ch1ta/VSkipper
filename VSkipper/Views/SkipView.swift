@@ -6,6 +6,8 @@ struct SkipView: View {
 
     @StateObject var appViewModel: AppViewModel
 
+    @StateObject var saveFileStore = SaveFileStore()
+
     @State private var alert = false
     @State private var alertMessage = ""
 
@@ -48,11 +50,21 @@ struct SkipView: View {
                     HStack {
                         Text("Configuration")
                         Spacer()
-                        if appViewModel.selectedSaveFile.rawValue.isEmpty {
-                            Text("No configurations").foregroundColor(.gray)
-                        } else {
-                            FixedPicker(selection: $appViewModel.selectedSaveFile)
-                        }
+                        Picker(selection: $saveFileStore.selectedSaveFile, label: EmptyView()) {
+                            if saveFileStore.saveFiles.isEmpty {
+                                Text("No configurations").tag("")
+                            } else {
+                                ForEach(saveFileStore.saveFiles, id: \.self) { sf in
+                                    Text(sf.name).tag(sf.name)
+                                }
+                            }
+                        }.frame(width: 300)
+                         .task {
+                             do {
+                                 try saveFileStore.loadSaveFiles()
+                             } catch {
+                             }
+                         }
                     }.padding(.vertical)
                 }.padding(.horizontal)
                  .overlay(
@@ -72,7 +84,7 @@ struct SkipView: View {
                 }
                 Button {
                     do {
-                        try appViewModel.startSkipper()
+                        try appViewModel.startSkipper(configData: saveFileStore.selectedSaveFile.getAgentConfigData())
                         NSApplication.shared.keyWindow?.close()
                     } catch {
                         alertMessage = error.localizedDescription

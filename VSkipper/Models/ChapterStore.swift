@@ -15,12 +15,6 @@ class ChapterStore: ObservableObject {
 
     var pathName: String = ""
 
-    @UserDefault(key: APP.UserDefaults.introDuration, defaultValue: 0)
-    var introDuration: Int
-
-    @UserDefault(key: APP.UserDefaults.outroDuration, defaultValue: 0)
-    var outroDuration: Int
-
     func loadChapters(path: String) async throws {
         let url = URL(string: path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
         pathName = url.lastPathComponent
@@ -29,7 +23,9 @@ class ChapterStore: ObservableObject {
         try await files.asyncForEach { file in
             if file.pathExtension == "mkv" {
                 let chapters = try await FFMPEGService.shared.getChapters(path: file.path)
-                self.chapters[file.lastPathComponent] = chapters
+                DispatchQueue.main.async {
+                    self.chapters[file.lastPathComponent] = chapters
+                }
             }
         }
     }
@@ -49,19 +45,17 @@ class ChapterStore: ObservableObject {
         }
 
         let file = savesURL.appendingPathComponent(pathName.lowercased().appending(APP.FileExtension.json))
-        
-        let introStart = chapters.values.first?.first(where: {$0.name == introChapterName})?.startTime ?? 0
-        let introEnd = chapters.values.first?.first(where: {$0.name == introChapterName})?.endTime ?? 0
-        let outroStart = chapters.values.first?.first(where: {$0.name == outroChapterName})?.startTime ?? 0
-        let outroEnd = chapters.values.first?.first(where: {$0.name == outroChapterName})?.endTime ?? 0
-
-        introDuration = introEnd - introStart
-        outroDuration = outroEnd - outroStart
 
         let configEntries = chapters.compactMap {key, value in
-            let introTime = value.first(where: {$0.name == introChapterName})?.startTime ?? -1
-            let outroTime = value.first(where: {$0.name == outroChapterName})?.startTime ?? -1
-            return ConfigEntry(name: key, introTime: introTime + 1, outroTime: outroTime + 1, introDuration: introDuration - 1, outroDuration: outroDuration - 1)
+            print(key)
+            print(value)
+            let introTime = value.first(where: {$0.name == introChapterName})?.startTime ?? -2
+            let outroTime = value.first(where: {$0.name == outroChapterName})?.startTime ?? -2
+            
+            let introEndTime = value.first(where: {$0.name == introChapterName})?.endTime ?? -1
+            let outroEndTime = value.first(where: {$0.name == outroChapterName})?.endTime ?? -1
+            
+            return ConfigEntry(name: key, introTime: introTime + 1, outroTime: outroTime + 1, introDuration: introEndTime - introTime - 1, outroDuration: outroEndTime - outroTime - 1)
         }
 
         let data = try encoder.encode(configEntries)

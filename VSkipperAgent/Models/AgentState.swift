@@ -12,8 +12,6 @@ class AgentState {
     var currentFilename: String = ""
     var skipStatus: SkipStatus = .idle
 
-    var introDuration: Int = 0
-    var outroDuration: Int = 0
     var vlcPort: Int = 0
     var vlcPassword: String = ""
     var configEntries: [SkipConfigEntry] = []
@@ -31,8 +29,6 @@ class AgentState {
             logger.warning("Failed to decode config")
             return
         }
-        introDuration = config.introDuration
-        outroDuration = config.outroDuration
         vlcPort = config.vlcPort
         vlcPassword = config.vlcPassword
         configEntries = config.entries
@@ -65,7 +61,7 @@ class AgentState {
                     if (skipTime...(skipTime + 1)).contains(time) {
                         vlcApi.skipForward(seconds: file.introDuration)
                         skipStatus = .outro
-                        logger.debug("Status changed: outro, VLC time: \(time)s, skip at: \(skipTime)")
+                        logger.debug("Status changed: outro (skipped \(file.introDuration)s), VLC time: \(time)s, skip at: \(skipTime)")
                     }
                 } else {
                     skipStatus = .outro
@@ -79,7 +75,7 @@ class AgentState {
                     if (skipTime...(skipTime + 1)).contains(time) {
                         vlcApi.skipForward(seconds: file.outroDuration)
                         skipStatus = .idle
-                        logger.debug("Status changed: idle, VLC time: \(time)s, skip at: \(skipTime)")
+                        logger.debug("Status changed: idle (skipped \(file.outroDuration)s), VLC time: \(time)s, skip at: \(skipTime)")
                     }
                 } else {
                     skipStatus = .idle

@@ -14,8 +14,6 @@ class AppViewModel: ObservableObject {
 
     @Published var agentStatus: SMAppService.Status = .notFound
 
-    @Published var selectedSaveFile: SkipSaveFile = SkipSaveFile(rawValue: "")!
-
     let savesURL: URL
 
     init() {
@@ -24,7 +22,6 @@ class AppViewModel: ObservableObject {
 
         savesURL = applicationSupportUrl.appendingPathComponent("\(bundleID)/\(APP.PathName.saves)", isDirectory: true)
 
-        refreshSaves()
         refreshAgentStatus()
     }
 
@@ -32,28 +29,6 @@ class AppViewModel: ObservableObject {
         let agent = SMAppService.agent(plistName: APP.Agent.name)
         DispatchQueue.main.async {
             self.agentStatus = agent.status
-        }
-    }
-
-    func refreshSaves() {
-        var saves: [SkipSaveFile] = []
-
-        if FileManager.default.fileExists(atPath: savesURL.path(percentEncoded: false)) {
-            let files = try! FileManager.default.contentsOfDirectory(at: savesURL, includingPropertiesForKeys: nil)
-            for file in files {
-                if file.lastPathComponent == APP.FileName.dsStore {
-                    continue
-                }
-                saves.append(SkipSaveFile(rawValue: file.lastPathComponent)!)
-            }
-        }
-
-        if !saves.isEmpty {
-            SkipSaveFile.allCases = saves
-            selectedSaveFile = SkipSaveFile.allCases.first!
-        } else {
-            SkipSaveFile.allCases = []
-            selectedSaveFile = SkipSaveFile(rawValue: "")!
         }
     }
 
@@ -69,11 +44,11 @@ class AppViewModel: ObservableObject {
         refreshAgentStatus()
     }
 
-    func startSkipper() throws {
+    func startSkipper(configData: Data) throws {
         if agentStatus != .enabled {
             throw AppError.agentNotRegistered
         }
-        try sendDataToAgent(messageID: 1, data: createConfigForAgent())
+        try sendDataToAgent(messageID: 1, data: configData)
         DispatchQueue.main.async {
             self.agentRunning = true
             self.iconColor = .green
@@ -98,28 +73,6 @@ class AppViewModel: ObservableObject {
         if sendResult != Int32(kCFMessagePortSuccess) {
             throw AppError.agentMessageFailed
         }
-    }
-
-    private func createConfigForAgent() throws -> Data {
-        let introDuration = defaults.integer(forKey: SettingsKey.introDuration.rawValue)
-        let outroDuration = defaults.integer(forKey: SettingsKey.outroDuration.rawValue)
-        let vlcPort = defaults.integer(forKey: SettingsKey.vlcPort.rawValue)
-        let vlcPassword = defaults.string(forKey: SettingsKey.vlcPassword.rawValue) ?? ""
-
-        let JSONDecoder = JSONDecoder()
-
-        let fileData = try Data(contentsOf: savesURL.appendingPathComponent(selectedSaveFile.name))
-
-        let entries = try JSONDecoder.decode([SkipConfigEntry].self, from: fileData)
-
-        let config = SkipConfig(introDuration: introDuration,
-                                outroDuration: outroDuration,
-                                vlcPort: vlcPort,
-                                vlcPassword: vlcPassword,
-                                entries: entries)
-
-        let encoder = JSONEncoder()
-        return try encoder.encode(config)
     }
 
 }

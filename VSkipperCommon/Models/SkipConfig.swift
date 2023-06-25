@@ -3,8 +3,6 @@
 import Foundation
 
 struct SkipConfig: Codable {
-    let introDuration: Int
-    let outroDuration: Int
     let vlcPort: Int
     let vlcPassword: String
     let entries: [SkipConfigEntry]
