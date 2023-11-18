@@ -12,11 +12,14 @@ class SettingsViewModel: ObservableObject {
     @Published var vlcPassword: String = ""
 
     @Published var vlcExecutablePath: String = ""
+    
+    @Published var skipOutroFull: Bool = false
 
     init() {
         vlcPort = defaults.integer(forKey: SettingsKey.vlcPort.rawValue)
         vlcPassword = defaults.string(forKey: SettingsKey.vlcPassword.rawValue) ?? ""
         vlcExecutablePath = defaults.string(forKey: SettingsKey.vlcExecutablePath.rawValue) ?? ""
+        skipOutroFull = defaults.bool(forKey: SettingsKey.skipOutroFull.rawValue)
     }
 
     func save() throws {
@@ -27,6 +30,7 @@ class SettingsViewModel: ObservableObject {
         defaults.set(vlcPort, forKey: SettingsKey.vlcPort.rawValue)
         defaults.set(vlcPassword, forKey: SettingsKey.vlcPassword.rawValue)
         defaults.set(vlcExecutablePath, forKey: SettingsKey.vlcExecutablePath.rawValue)
+        defaults.set(skipOutroFull, forKey: SettingsKey.skipOutroFull.rawValue)
     }
 
 }

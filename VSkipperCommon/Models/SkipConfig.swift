@@ -5,6 +5,7 @@ import Foundation
 struct SkipConfig: Codable {
     let vlcPort: Int
     let vlcPassword: String
+    let skipOutroFull: Bool
     let entries: [SkipConfigEntry]
 }
 

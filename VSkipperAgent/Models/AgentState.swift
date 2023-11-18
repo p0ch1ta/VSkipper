@@ -14,6 +14,7 @@ class AgentState {
 
     var vlcPort: Int = 0
     var vlcPassword: String = ""
+    var skipOutroFull: Bool = false
     var configEntries: [SkipConfigEntry] = []
 
     func updateState(type: AgentStateType, config: Data) {
@@ -31,6 +32,7 @@ class AgentState {
         }
         vlcPort = config.vlcPort
         vlcPassword = config.vlcPassword
+        skipOutroFull = config.skipOutroFull
         configEntries = config.entries
         self.type = type
     }
@@ -73,7 +75,11 @@ class AgentState {
                 if skipTime > -1 {
                     logger.debug("Status: outro, VLC time: \(time)s, skip at: \(skipTime)")
                     if (skipTime...(skipTime + 1)).contains(time) {
-                        vlcApi.skipForward(seconds: file.outroDuration)
+                        if skipOutroFull {
+                            vlcApi.playNext()
+                        } else {
+                            vlcApi.skipForward(seconds: file.outroDuration)
+                        }
                         skipStatus = .idle
                         logger.debug("Status changed: idle (skipped \(file.outroDuration)s), VLC time: \(time)s, skip at: \(skipTime)")
                     }

@@ -7,7 +7,7 @@ class ChapterStore: ObservableObject {
     @Published var chapters: [String: [Chapter]] = [:]
     
     var uniqueChapters: [Chapter] {
-        chapters.values.flatMap { $0 }.unique { $0.name }
+        chapters.values.flatMap { $0 }.unique { $0.name } + [Chapter(id: UUID(), name: "EMPTY", startTime: 0, endTime: 0)]
     }
 
     @Published var introChapterName: String = ""
@@ -47,8 +47,6 @@ class ChapterStore: ObservableObject {
         let file = savesURL.appendingPathComponent(pathName.lowercased().appending(APP.FileExtension.json))
 
         let configEntries = chapters.compactMap {key, value in
-            print(key)
-            print(value)
             let introTime = value.first(where: {$0.name == introChapterName})?.startTime ?? -2
             let outroTime = value.first(where: {$0.name == outroChapterName})?.startTime ?? -2
             

@@ -24,6 +24,12 @@ struct SettingsView: View {
                         Divider()
                         Group {
                             HStack {
+                                Text("Skip outro full")
+                                Spacer()
+                                Toggle(isOn: $settingsViewModel.skipOutroFull){}.toggleStyle(.checkbox)
+                            }.padding(.vertical)
+                            Divider()
+                            HStack {
                                 Text("VLC executable")
                                 Spacer()
                                 TextWithPopover(text: settingsViewModel.vlcExecutablePath)

@@ -11,6 +11,7 @@ struct SaveFile: Identifiable, Hashable {
         let defaults = UserDefaults.standard
         let vlcPort = defaults.integer(forKey: APP.UserDefaults.vlcPort)
         let vlcPassword = defaults.string(forKey: APP.UserDefaults.vlcPassword) ?? ""
+        let skipOutroFull = defaults.bool(forKey: APP.UserDefaults.skipOutroFull)
 
         let JSONDecoder = JSONDecoder()
 
@@ -20,6 +21,7 @@ struct SaveFile: Identifiable, Hashable {
 
         let config = SkipConfig(vlcPort: vlcPort,
                                 vlcPassword: vlcPassword,
+                                skipOutroFull: skipOutroFull,
                                 entries: entries)
 
         let encoder = JSONEncoder()

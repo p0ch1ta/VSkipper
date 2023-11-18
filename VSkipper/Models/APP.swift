@@ -12,6 +12,7 @@ struct APP {
         static let vlcPassword = "vlcPassword"
         static let vlcPort = "vlcPort"
         static let selectedSaveFile = "selectedSaveFile"
+        static let skipOutroFull = "skipOutroFull"
     }
 
     struct Agent {

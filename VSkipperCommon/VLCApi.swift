@@ -68,6 +68,18 @@ class VLCApi {
 
         let (_, _, _) = session.synchronousDataTask(request: request)
     }
+    
+    func playNext() {
+        let params = [
+            URLQueryItem(name: "command", value: "pl_next")
+        ]
+
+        let request = getURLRequestWithAuthorization(params: params)
+
+        let session = URLSession.shared
+
+        let (_, _, _) = session.synchronousDataTask(request: request)
+    }
 
     func getCurrentTime() throws -> Int {
         let request = getURLRequestWithAuthorization(params: [])

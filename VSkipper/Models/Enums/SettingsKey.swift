@@ -8,4 +8,5 @@ enum SettingsKey: String {
     case vlcPort = "vlcPort"
     case vlcPassword = "vlcPassword"
     case vlcExecutablePath = "vlcExecutablePath"
+    case skipOutroFull = "skipOutroFull"
 }
