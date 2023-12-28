@@ -11,9 +11,13 @@ class SampleStore: ObservableObject {
 
     func loadSamples() throws {
         samples = try SampleService.shared.getSamples()
+        samples = samples.sorted { $0.name.lowercased() < $1.name.lowercased() }
     }
 
     func saveNewSample() async throws {
+        if let existingSample = samples.first(where: { $0.id == newSample.id }) {
+            try removeSample(id: newSample.id)
+        }
         newSample.fileExtension = try await FFMPEGService.shared.getAudioFormat(path: newSample.sourceFilePath)
         guard let samplePath = newSample.filePath else {
             throw SampleError.sampleFilePathResolveError
@@ -22,6 +26,7 @@ class SampleStore: ObservableObject {
         samples.append(newSample)
         try SampleService.shared.saveSamples(samples: samples)
         newSample = Sample()
+        samples = samples.sorted { $0.name.lowercased() < $1.name.lowercased() }
     }
 
     func removeSample(id: UUID) throws {

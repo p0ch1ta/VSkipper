@@ -3,13 +3,8 @@
 import SwiftUI
 
 struct SettingsView: View {
-
-    @StateObject private var settingsViewModel = SettingsViewModel()
-
-    @State private var alert = false
-    @State private var alertMessage = ""
-
-    @State private var passwordHidden = true
+    
+    @StateObject var settingsStore = SettingsStore()
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,28 +19,21 @@ struct SettingsView: View {
                         Divider()
                         Group {
                             HStack {
-                                Text("Skip outro full")
+                                Text("Skip outro to the end")
                                 Spacer()
-                                Toggle(isOn: $settingsViewModel.skipOutroFull){}.toggleStyle(.checkbox)
+                                Toggle(isOn: $settingsStore.skipOutroFull){}.toggleStyle(.checkbox)
                             }.padding(.vertical)
                             Divider()
                             HStack {
-                                Text("VLC executable")
+                                Text("VLC application")
                                 Spacer()
-                                TextWithPopover(text: settingsViewModel.vlcExecutablePath)
-                            }.padding(.vertical)
-                            Divider()
-                            HStack {
-                                Text("Select app")
-                                Spacer()
-                                FilePicker(path: $settingsViewModel.vlcExecutablePath, mode: .file)
+                                Directory(path: $settingsStore.vlcExecutablePath, openInFinder: false, mode: .file)
                             }.padding(.vertical)
                             Divider()
                             HStack {
                                 Text("VLC port")
                                 Spacer()
-                                TextField("", value: $settingsViewModel.vlcPort, formatter: NumberFormatter())
-                                    .fixedSize()
+                                TextField("", value: $settingsStore.vlcPort, formatter: NumberFormatter())
                                     .textFieldStyle(PlainTextFieldStyle())
                                     .padding(.vertical, 2)
                                     .multilineTextAlignment(.trailing)
@@ -54,27 +42,7 @@ struct SettingsView: View {
                             HStack {
                                 Text("VLC password")
                                 Spacer()
-                                if passwordHidden {
-                                    SecureField("", text: $settingsViewModel.vlcPassword)
-                                        .textFieldStyle(PlainTextFieldStyle())
-                                        .padding(.vertical, 2)
-                                        .multilineTextAlignment(.trailing)
-                                } else {
-                                    TextField("", text: $settingsViewModel.vlcPassword)
-                                        .fixedSize()
-                                        .textFieldStyle(PlainTextFieldStyle())
-                                        .padding(.vertical, 2)
-                                        .multilineTextAlignment(.trailing)
-                                }
-                            }.padding(.vertical)
-                            Divider()
-                            HStack {
-                                Spacer()
-                                Button {
-                                    passwordHidden.toggle()
-                                } label: {
-                                    Text(passwordHidden ? "Show password" : "Hide password").frame(width: 186)
-                                }
+                                PasswordField(password: $settingsStore.vlcPassword)
                             }.padding(.vertical)
                         }
                     }.padding(.horizontal)
@@ -94,22 +62,6 @@ struct SettingsView: View {
                 } label: {
                     Text("Close")
                 }
-                Button {
-                    do {
-                        try settingsViewModel.save()
-                        alertMessage = "Settings saved"
-                    } catch {
-                        alertMessage = error.localizedDescription
-                    }
-                    alert = true
-                } label: {
-                    Text("Save")
-                }.keyboardShortcut(.defaultAction)
-                 .alert(alertMessage, isPresented: $alert, actions: {
-                     Button("OK", role: .cancel) {
-                         alert = false
-                     }.keyboardShortcut(.defaultAction)
-                 })
             }.padding()
         }
     }

@@ -27,14 +27,17 @@ struct SamplesListView: View {
                     Section {
                         HStack {
                             Button {
+                                sampleStore.newSample = Sample()
                                 openWindow(id: "sample")
                                 DispatchQueue.main.async {
                                     NSApplication.shared.activate(ignoringOtherApps: true)
                                 }
                             } label: {
-                                Image(systemName: "plus")
+                                Image(systemName: "plus.circle.fill")
                                     .foregroundColor(.gray)
                             }.padding(.leading, 8)
+                                .contentShape(Rectangle())
+                                .buttonStyle(.plain)
                             Divider()
                                 .frame(height: 16)
                                 .padding(.vertical, 4)
@@ -47,9 +50,30 @@ struct SamplesListView: View {
                                     }
                                 }
                             } label: {
-                                Image(systemName: "minus")
+                                Image(systemName: "minus.circle.fill")
                                     .foregroundColor(.gray)
                             }
+                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
+                            Divider()
+                                .frame(height: 16)
+                                .padding(.vertical, 4)
+                            Button {
+                                if let selection = selection {
+                                    sampleStore.newSample = sampleStore.samples.first(where: { $0.id == selection })!
+                                    openWindow(id: "sample")
+                                    self.selection = nil
+                                    DispatchQueue.main.async {
+                                        NSApplication.shared.activate(ignoringOtherApps: true)
+                                    }
+                                    
+                                }
+                            } label: {
+                                Image(systemName: "pencil.circle.fill")
+                                    .foregroundColor(.gray)
+                            }
+                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
                             Spacer()
                         }
                     }
@@ -93,15 +117,9 @@ struct SamplesListView: View {
                             }.padding(.vertical)
                             Divider()
                             HStack {
-                                Text("Duration")
-                                Spacer()
-                                Text("\(sampleStore.samples.first(where: { $0.id == selection })?.duration ?? -1)")
-                            }.padding(.vertical)
-                            Divider()
-                            HStack {
                                 Text("Series path")
                                 Spacer()
-                                TextWithPopover(text: sampleStore.samples.first(where: { $0.id == selection })?.fileExtension ?? "")
+                                Directory(path: .constant(sampleStore.samples.first(where: { $0.id == selection })?.targetPlaylistPath ?? ""), openInFinder: true, mode: .none)
                             }.padding(.vertical)
                         }.padding(.horizontal)
                          .overlay(

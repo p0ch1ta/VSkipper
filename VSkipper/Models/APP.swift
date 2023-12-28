@@ -11,6 +11,7 @@ struct APP {
         static let outroDuration = "outroDuration"
         static let vlcPassword = "vlcPassword"
         static let vlcPort = "vlcPort"
+        static let vlcExecutablePath = "vlcExecutablePath"
         static let selectedSaveFile = "selectedSaveFile"
         static let skipOutroFull = "skipOutroFull"
     }
