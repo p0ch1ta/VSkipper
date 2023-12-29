@@ -8,14 +8,18 @@ class SampleStore: ObservableObject {
     @Published var samples: [Sample] = []
 
     @Published var newSample = Sample()
+    
+    @Published var search = ""
 
     func loadSamples() throws {
         samples = try SampleService.shared.getSamples()
-        samples = samples.sorted { $0.name.lowercased() < $1.name.lowercased() }
+        samples = samples
+            .sorted { $0.name.lowercased() < $1.name.lowercased() }
+            .filter { search.isEmpty ? true : $0.name.lowercased().contains(search.lowercased()) }
     }
 
     func saveNewSample() async throws {
-        if let existingSample = samples.first(where: { $0.id == newSample.id }) {
+        if (samples.first(where: { $0.id == newSample.id }) != nil) {
             try removeSample(id: newSample.id)
         }
         newSample.fileExtension = try await FFMPEGService.shared.getAudioFormat(path: newSample.sourceFilePath)
@@ -26,7 +30,9 @@ class SampleStore: ObservableObject {
         samples.append(newSample)
         try SampleService.shared.saveSamples(samples: samples)
         newSample = Sample()
-        samples = samples.sorted { $0.name.lowercased() < $1.name.lowercased() }
+        samples = samples
+            .sorted { $0.name.lowercased() < $1.name.lowercased() }
+            .filter { search.isEmpty ? true : $0.name.lowercased().contains(search.lowercased()) }
     }
 
     func removeSample(id: UUID) throws {

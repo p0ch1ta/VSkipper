@@ -13,6 +13,30 @@ struct SamplesListView: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("Search")
+                        Spacer()
+                        TextField("Name", text: $sampleStore.search)
+                            .textFieldStyle(PlainTextFieldStyle())
+                            .padding(.vertical, 2)
+                            .multilineTextAlignment(.trailing)
+                            .onChange(of: sampleStore.search) { _ in
+                                do {
+                                    try sampleStore.loadSamples()
+                                } catch {
+                                }
+                            }
+                    }.padding(.vertical)
+                }.padding(.horizontal)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(.gray, lineWidth: 1)
+                            .opacity(0.15)
+                    )
+            }.padding(.horizontal)
+                .padding(.top)
+            VStack(spacing: 0) {
                 VStack (spacing: 0) {
                     Table(sampleStore.samples, selection: $selection) {
                         TableColumn("Name", value: \.name)

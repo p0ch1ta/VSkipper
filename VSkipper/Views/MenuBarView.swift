@@ -6,7 +6,7 @@ struct MenuBarView: View {
 
     @Environment(\.openWindow) var openWindow
 
-    @StateObject var appViewModel: AppViewModel
+    @StateObject var saveFileStore: SaveFileStore
 
     @State private var alert = false
     @State private var alertMessage = ""
@@ -16,16 +16,20 @@ struct MenuBarView: View {
             openWindow(id: "skip")
             DispatchQueue.main.async {
                 NSApplication.shared.activate(ignoringOtherApps: true)
-                //appViewModel.refreshSaves()
+                do {
+                    try saveFileStore.loadSaveFiles()
+                } catch {
+                    print(error)
+                }
             }
         } label: {
-            Text(appViewModel.agentRunning ? "Skipper is running" : "Start skipper")
-        }.disabled(appViewModel.agentRunning)
-        if appViewModel.agentRunning {
+            Text(saveFileStore.saveFileActive ? "Skipper is running" : "Start skipper")
+        }.disabled(saveFileStore.saveFileActive)
+        if saveFileStore.saveFileActive {
             Divider()
             Button {
                 do {
-                    try appViewModel.stopSkipper()
+                    try saveFileStore.removeSaveFileFromAgent()
                 } catch {
                     alertMessage = error.localizedDescription
                     alert = true
@@ -72,7 +76,7 @@ struct MenuBarView: View {
         Divider()
         Button {
             do {
-                try appViewModel.stopSkipper()
+                try saveFileStore.removeSaveFileFromAgent()
             } catch {
                 alertMessage = error.localizedDescription
                 alert = true
@@ -86,6 +90,6 @@ struct MenuBarView: View {
 
 struct MenuBarView_Previews: PreviewProvider {
     static var previews: some View {
-        MenuBarView(appViewModel: AppViewModel())
+        MenuBarView(saveFileStore: SaveFileStore())
     }
 }

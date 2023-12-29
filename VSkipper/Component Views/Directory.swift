@@ -36,7 +36,9 @@ struct Directory: View {
                     panel.allowsMultipleSelection = false
                     panel.canChooseDirectories = mode == .directory
                     panel.canChooseFiles = mode == .file
-                    panel.directoryURL = URL(fileURLWithPath: path)
+                    if !path.isEmpty {
+                        panel.directoryURL = URL(fileURLWithPath: path)
+                    }
                     if panel.runModal() == .OK {
                         path = panel.url?.path(percentEncoded: false) ?? ""
                     }

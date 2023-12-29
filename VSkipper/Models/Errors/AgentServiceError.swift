@@ -2,13 +2,13 @@
 
 import Foundation
 
-enum AppError: Error {
+enum AgentServiceError: Error {
     case agentNotRunning
     case agentMessageFailed
     case agentNotRegistered
 }
 
-extension AppError: LocalizedError {
+extension AgentServiceError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .agentNotRunning:

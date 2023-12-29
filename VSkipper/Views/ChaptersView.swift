@@ -9,9 +9,7 @@ struct ChaptersView: View {
     @State private var alert = false
     @State private var loading = false
     @State private var alertMessage = ""
-    @State private var path = ""
-    @State private var selection = ""
-
+    
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
@@ -25,64 +23,63 @@ struct ChaptersView: View {
                             }.padding(.vertical)
                             Divider()
                             HStack {
-                                Text("Path")
+                                Text("Series path")
                                 Spacer()
-                                TextWithPopover(text: path)
-                            }.padding(.vertical)
-                            Divider()
-                            HStack {
-                                Text("Select path")
-                                Spacer()
+                                Directory(path: $chapterStore.seriesPath, openInFinder: false, mode: .directory)
                                 Button {
-                                    let panel = NSOpenPanel()
-                                    panel.allowsMultipleSelection = false
-                                    panel.canChooseDirectories = true
-                                    if panel.runModal() == .OK {
-                                        let path = panel.url?.path(percentEncoded: false) ?? ""
-                                        Task {
-                                            do {
-                                                loading = true
-                                                try await chapterStore.loadChapters(path: path)
-                                                self.path = path
-                                            } catch {
-                                                alertMessage = error.localizedDescription
-                                                alert = true
-                                            }
-                                            loading = false
+                                    Task {
+                                        do {
+                                            loading = true
+                                            try await chapterStore.loadChapters()
+                                        } catch {
+                                            alertMessage = error.localizedDescription
+                                            alert = true
                                         }
+                                        loading = false
                                     }
                                 } label: {
-                                    Image(systemName: "folder.fill")
-                                        .foregroundColor(.cyan)
+                                    Text("Load")
                                 }
                             }.padding(.vertical)
                             Divider()
                             HStack {
                                 Text("Intro chapter")
                                 Spacer()
-                                Picker(selection: $chapterStore.introChapterName, label: EmptyView()) {
-                                    if chapterStore.chapters.isEmpty {
-                                        Text("No chapters found").tag("")
-                                    } else {
+                                if chapterStore.uniqueChapters.isEmpty {
+                                    Text("No chapters found").foregroundColor(.gray)
+                                } else {
+                                    Picker(selection: $chapterStore.introChapterName, label: EmptyView()) {
                                         ForEach(chapterStore.uniqueChapters, id: \.self) { chapter in
                                             Text(chapter.name).tag(chapter.name)
                                         }
-                                    }
-                                }.fixedSize()
+                                    }.fixedSize().disabled(chapterStore.introChapterDisabled)
+                                }
+                            }.padding(.vertical)
+                            Divider()
+                            HStack {
+                                Text("No intro")
+                                Spacer()
+                                Toggle(isOn: $chapterStore.introChapterDisabled){}.toggleStyle(.checkbox)
                             }.padding(.vertical)
                             Divider()
                             HStack {
                                 Text("Outro chapter")
                                 Spacer()
-                                Picker(selection: $chapterStore.outroChapterName, label: EmptyView()) {
-                                    if chapterStore.chapters.isEmpty {
-                                        Text("No chapters found").tag("")
-                                    } else {
+                                if chapterStore.uniqueChapters.isEmpty {
+                                    Text("No chapters found").foregroundColor(.gray)
+                                } else {
+                                    Picker(selection: $chapterStore.outroChapterName, label: EmptyView()) {
                                         ForEach(chapterStore.uniqueChapters, id: \.self) { chapter in
                                             Text(chapter.name).tag(chapter.name)
                                         }
-                                    }
-                                }.fixedSize()
+                                    }.fixedSize().disabled(chapterStore.outroChapterDisabled)
+                                }
+                            }.padding(.vertical)
+                            Divider()
+                            HStack {
+                                Text("No outro")
+                                Spacer()
+                                Toggle(isOn: $chapterStore.outroChapterDisabled){}.toggleStyle(.checkbox)
                             }.padding(.vertical)
                         }.padding(.horizontal)
                          .overlay(

@@ -4,19 +4,33 @@ import Foundation
 
 class ChapterStore: ObservableObject {
 
+    @Published var seriesPath: String = ""
     @Published var chapters: [String: [Chapter]] = [:]
     
     var uniqueChapters: [Chapter] {
-        chapters.values.flatMap { $0 }.unique { $0.name } + [Chapter(id: UUID(), name: "EMPTY", startTime: 0, endTime: 0)]
+        chapters.values.flatMap { $0 }.unique { $0.name }
     }
 
     @Published var introChapterName: String = ""
     @Published var outroChapterName: String = ""
+    @Published var introChapterDisabled: Bool = false
+    @Published var outroChapterDisabled: Bool = false
 
     var pathName: String = ""
 
-    func loadChapters(path: String) async throws {
-        let url = URL(string: path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
+    func loadChapters() async throws {
+        
+        if seriesPath.isEmpty {
+            throw ChaptersError.emptyChapterPath
+        }
+        
+        DispatchQueue.main.async {
+            self.chapters = [:]
+            self.introChapterName = ""
+            self.outroChapterName = ""
+        }
+        
+        let url = URL(string: seriesPath.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!)!
         pathName = url.lastPathComponent
         let files = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
 
@@ -28,9 +42,20 @@ class ChapterStore: ObservableObject {
                 }
             }
         }
+        if !uniqueChapters.isEmpty {
+            DispatchQueue.main.async {
+                self.introChapterName = self.uniqueChapters.first!.name
+                self.outroChapterName = self.uniqueChapters.first!.name
+            }
+        }
     }
 
     func saveConfig() throws {
+        
+        if (introChapterName.isEmpty && outroChapterName.isEmpty) {
+            throw ChaptersError.noChaptersSelected
+        }
+        
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
 
@@ -47,8 +72,8 @@ class ChapterStore: ObservableObject {
         let file = savesURL.appendingPathComponent(pathName.lowercased().appending(APP.FileExtension.json))
 
         let configEntries = chapters.compactMap {key, value in
-            let introTime = value.first(where: {$0.name == introChapterName})?.startTime ?? -2
-            let outroTime = value.first(where: {$0.name == outroChapterName})?.startTime ?? -2
+            let introTime = value.first(where: {$0.name == introChapterName && !introChapterDisabled})?.startTime ?? -2
+            let outroTime = value.first(where: {$0.name == outroChapterName && !outroChapterDisabled})?.startTime ?? -2
             
             let introEndTime = value.first(where: {$0.name == introChapterName})?.endTime ?? -1
             let outroEndTime = value.first(where: {$0.name == outroChapterName})?.endTime ?? -1
@@ -61,19 +86,4 @@ class ChapterStore: ObservableObject {
         try data.write(to: file)
     }
 
-}
-
-extension Array {
-    func unique<T:Hashable>(by: (Element) -> T)  -> [Element] {
-        var set = Set<T>() //the unique list kept in a Set for fast retrieval
-        var arrayOrdered = [Element]() //keeping the unique list of elements but ordered
-        for value in self {
-            if !set.contains(by(value)) {
-                set.insert(by(value))
-                arrayOrdered.append(value)
-            }
-        }
-
-        return arrayOrdered
-    }
 }

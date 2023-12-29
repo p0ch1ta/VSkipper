@@ -2,7 +2,7 @@
 
 import SwiftUI
 
-struct SamplesView: View {
+struct SampleView: View {
 
     @EnvironmentObject var sampleStore: SampleStore
 
@@ -276,6 +276,6 @@ struct SamplesView: View {
 
 struct SamplesView_Previews: PreviewProvider {
     static var previews: some View {
-        SamplesView()
+        SampleView()
     }
 }

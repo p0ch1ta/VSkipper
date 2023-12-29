@@ -6,7 +6,7 @@ import ChromaSwift
 //@MainActor
 class ScanStore: ObservableObject {
 
-    @Published var playlistPath: String = APP.Placeholder.emptyPlaylistPath {
+    @Published var playlistPath: String = "" {
         didSet {
             do {
                 try loadSamples()
@@ -23,6 +23,7 @@ class ScanStore: ObservableObject {
     @Published var totalFiles = 0
     @Published var filesProcessed = 0
     @Published var savesPath: String = ""
+    @Published var forcedStop: Bool = false
 
     var samples: [Sample] = []
     var configEntries = [ConfigEntry]()
@@ -30,6 +31,10 @@ class ScanStore: ObservableObject {
     func loadSamples() throws {
         samples = try SampleService.shared.getSamples()
         samples = samples.filter({ $0.targetPlaylistPath == playlistPath })
+        filesProcessed = 0
+        totalFiles = 0
+        currentIteration = 0
+        savesPath = ""
     }
 
     func getStatus() -> ScanStatus {
@@ -78,6 +83,14 @@ class ScanStore: ObservableObject {
                 var configEntry = ConfigEntry(name: file.lastPathComponent, introTime: -1, outroTime: -1, introDuration: 0, outroDuration: 0)
 
                 for sample in samples {
+                    if forcedStop {
+                        DispatchQueue.main.async {
+                            self.filesProcessed = 0
+                            self.totalFiles = 0
+                            self.forcedStop = false
+                        }
+                        return
+                    }
                     if configEntry.introTime != -1 && sample.type == .intro {
                         continue
                     }

@@ -3,7 +3,7 @@
 import Foundation
 
 enum ScanStatus: String {
-    case idle = "No files to process"
+    case idle = "Idle"
     case processing = "Processing"
     case done = "Finished"
 }

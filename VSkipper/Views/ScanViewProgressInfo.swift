@@ -4,7 +4,6 @@ import SwiftUI
 
 struct ScanViewProgressInfo: View {
 
-    //@StateObject var scanViewModel: ScanViewModel
     @StateObject var scanStore: ScanStore
 
     var body: some View {
@@ -24,38 +23,45 @@ struct ScanViewProgressInfo: View {
                     })
                 }.padding(.vertical)
                 Divider()
-                Group {
-                    HStack {
-                        Text("Files")
-                        Spacer()
-                        Text("\(scanStore.filesProcessed)/\(scanStore.totalFiles)")
-                            .foregroundColor(.gray)
-                    }.padding(.vertical)
-                    Divider()
-                    HStack {
-                        Text("Current file")
-                        Spacer()
-                        Text(scanStore.currentFilename).foregroundColor(.gray)
-                    }.padding(.vertical)
-                    Divider()
-                    HStack {
-                        Text("Current sample")
-                        Spacer()
-                        Text(scanStore.currentSampleName).foregroundColor(.gray)
-                    }.padding(.vertical)
-                    Divider()
-                    HStack {
-                        Text("Similarity")
-                        Spacer()
-                        Text(scanStore.currentSimilarity).foregroundColor(.gray)
-                    }.padding(.vertical)
-                    Divider()
-                    HStack {
-                        Text("Iteration")
-                        Spacer()
-                        Text("\(scanStore.currentIteration)").foregroundColor(.gray)
-                    }.padding(.vertical)
-                }
+                HStack {
+                    Text("Files")
+                    Spacer()
+                    Text("\(scanStore.filesProcessed)/\(scanStore.totalFiles)")
+                        .foregroundColor(.gray)
+                }.padding(.vertical)
+//                Divider()
+//                Group {
+//                    HStack {
+//                        Text("Files")
+//                        Spacer()
+//                        Text("\(scanStore.filesProcessed)/\(scanStore.totalFiles)")
+//                            .foregroundColor(.gray)
+//                    }.padding(.vertical)
+//                    Divider()
+//                    HStack {
+//                        Text("Current file")
+//                        Spacer()
+//                        Text(scanStore.currentFilename).foregroundColor(.gray)
+//                    }.padding(.vertical)
+//                    Divider()
+//                    HStack {
+//                        Text("Current sample")
+//                        Spacer()
+//                        Text(scanStore.currentSampleName).foregroundColor(.gray)
+//                    }.padding(.vertical)
+//                    Divider()
+//                    HStack {
+//                        Text("Similarity")
+//                        Spacer()
+//                        Text(scanStore.currentSimilarity).foregroundColor(.gray)
+//                    }.padding(.vertical)
+//                    Divider()
+//                    HStack {
+//                        Text("Iteration")
+//                        Spacer()
+//                        Text("\(scanStore.currentIteration)").foregroundColor(.gray)
+//                    }.padding(.vertical)
+//                }
             }.padding(.horizontal)
              .overlay(
                  RoundedRectangle(cornerRadius: 6)

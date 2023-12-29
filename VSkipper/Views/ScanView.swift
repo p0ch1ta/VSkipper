@@ -4,8 +4,6 @@ import SwiftUI
 
 struct ScanView: View {
 
-    //@StateObject var scanViewModel = ScanViewModel()
-
     @StateObject var scanStore = ScanStore()
 
     @State private var alert = false
@@ -24,13 +22,7 @@ struct ScanView: View {
                     HStack {
                         Text("Playlist path")
                         Spacer()
-                        TextWithPopover(text: scanStore.playlistPath)
-                    }.padding(.vertical)
-                    Divider()
-                    HStack {
-                        Text("Select path")
-                        Spacer()
-                        FilePicker(path: $scanStore.playlistPath, mode: .directory)
+                        Directory(path: $scanStore.playlistPath, openInFinder: false, mode: .directory)
                             .disabled(scanStore.getStatus() == .processing)
                     }.padding(.vertical)
                     Divider()
@@ -53,22 +45,15 @@ struct ScanView: View {
                         Spacer()
                     }.padding(.vertical)
                     Divider()
-                    Group {
-                        HStack {
-                            Text("File directory")
-                            Spacer()
-                            TextWithPopover(text: scanStore.savesPath)
-                        }.padding(.vertical)
-                        Divider()
-                        HStack {
-                            Spacer()
-                            Button {
-                                //NSWorkspace.shared.open()
-                            } label: {
-                                Text("Open in finder")
-                            }.disabled(scanStore.savesPath.isEmpty)
-                        }.padding(.vertical)
-                    }
+                    HStack {
+                        Text("File directory")
+                        Spacer()
+                        if scanStore.savesPath.isEmpty {
+                            Text("No file").foregroundColor(.gray)
+                        } else {
+                            Directory(path: $scanStore.savesPath, openInFinder: true, mode: .none)
+                        }
+                    }.padding(.vertical)
                 }.padding(.horizontal)
                  .overlay(
                      RoundedRectangle(cornerRadius: 6)
@@ -85,24 +70,32 @@ struct ScanView: View {
                 } label: {
                     Text("Close")
                 }
-                Button {
-                    Task {
-                        do {
-                            try await scanStore.scanPlaylist()
-                        } catch {
-                            alertMessage = error.localizedDescription
-                            alert = true
-                        }
+                if scanStore.getStatus() == .processing {
+                    Button {
+                        scanStore.forcedStop = true
+                    } label: {
+                        Text("Stop")
                     }
-                } label: {
-                    Text("Scan")
-                }.keyboardShortcut(.defaultAction)
-                 .disabled(scanStore.getStatus() == .processing)
-                 .alert(alertMessage, isPresented: $alert, actions: {
-                     Button("OK", role: .cancel) {
-                         alert = false
-                     }.keyboardShortcut(.defaultAction)
-                 })
+                } else {
+                    Button {
+                        Task {
+                            do {
+                                try await scanStore.scanPlaylist()
+                            } catch {
+                                alertMessage = error.localizedDescription
+                                alert = true
+                            }
+                        }
+                    } label: {
+                        Text("Scan")
+                    }.keyboardShortcut(.defaultAction)
+                     .disabled(scanStore.getStatus() == .processing)
+                     .alert(alertMessage, isPresented: $alert, actions: {
+                         Button("OK", role: .cancel) {
+                             alert = false
+                         }.keyboardShortcut(.defaultAction)
+                     })
+                }
             }.padding()
         }
     }

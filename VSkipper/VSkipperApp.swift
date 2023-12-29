@@ -5,16 +5,16 @@ import SwiftUI
 @main
 struct VSkipperApp: App {
 
-    @StateObject var appViewModel = AppViewModel()
-
     @StateObject var sampleStore = SampleStore()
+    
+    @StateObject var saveFileStore = SaveFileStore()
 
     var body: some Scene {
         MenuBarExtra {
-            MenuBarView(appViewModel: appViewModel)
+            MenuBarView(saveFileStore: saveFileStore)
         } label: {
             let image = NSImage(systemSymbolName: "forward.circle", accessibilityDescription: nil)!
-            Image(nsImage: image.withMenuBarConfiguration(color: appViewModel.iconColor)!)
+            Image(nsImage: image.withMenuBarConfiguration(color: saveFileStore.saveFileActive ? .green : .gray)!)
         }
         Window("Settings", id: "settings") {
             SettingsView()
@@ -23,7 +23,7 @@ struct VSkipperApp: App {
                 .frame(width: 600)
         }.windowResizability(.contentSize)
         Window("Add sample", id: "sample") {
-            SamplesView()
+            SampleView()
                 .environmentObject(sampleStore)
                 .onlyCloseButton()
                 .fixedSize(horizontal: false, vertical: true)
@@ -36,7 +36,7 @@ struct VSkipperApp: App {
                 .frame(width: 600)
         }.windowResizability(.contentSize)
         Window("Start skipper", id: "skip") {
-            SkipView(appViewModel: appViewModel)
+            SkipView(saveFileStore: saveFileStore)
                 .onlyCloseButton()
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(width: 600)

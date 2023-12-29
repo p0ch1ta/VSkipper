@@ -4,9 +4,7 @@ import SwiftUI
 
 struct SkipView: View {
 
-    @StateObject var appViewModel: AppViewModel
-
-    @StateObject var saveFileStore = SaveFileStore()
+    @StateObject var saveFileStore: SaveFileStore
 
     @State private var alert = false
     @State private var alertMessage = ""
@@ -24,47 +22,25 @@ struct SkipView: View {
                     HStack {
                         Text("Agent status")
                         Spacer()
-                        Text(appViewModel.agentStatus.name).foregroundColor(.gray)
-                    }.padding(.vertical)
-                    Divider()
-                    HStack {
-                        Spacer()
+                        Text(AgentService.shared.getAgentStatus().name).foregroundColor(.gray)
                         Button {
                             Task {
                                 do {
-                                    if appViewModel.agentStatus == .enabled {
-                                        try await appViewModel.unregisterAgent()
+                                    if AgentService.shared.getAgentStatus() == .enabled {
+                                        try await AgentService.shared.unregisterAgent()
                                     } else {
-                                        try await appViewModel.registerAgent()
+                                        try await AgentService.shared.registerAgent()
                                     }
                                 } catch {
-                                    alertMessage = error.localizedDescription
-                                    alert = true
+                                    DispatchQueue.main.async {
+                                        alertMessage = error.localizedDescription
+                                        alert = true
+                                    }
                                 }
                             }
                         } label: {
-                            Text(appViewModel.agentStatus != .enabled ? "Enable" : "Disable")
+                            Text(AgentService.shared.getAgentStatus() != .enabled ? "Enable" : "Disable")
                         }
-                    }.padding(.vertical)
-                    Divider()
-                    HStack {
-                        Text("Configuration")
-                        Spacer()
-                        Picker(selection: $saveFileStore.selectedSaveFile, label: EmptyView()) {
-                            if saveFileStore.saveFiles.isEmpty {
-                                Text("No configurations").tag("")
-                            } else {
-                                ForEach(saveFileStore.saveFiles, id: \.self) { sf in
-                                    Text(sf.name).tag(sf.name)
-                                }
-                            }
-                        }.frame(width: 300)
-                         .task {
-                             do {
-                                 try saveFileStore.loadSaveFiles()
-                             } catch {
-                             }
-                         }
                     }.padding(.vertical)
                 }.padding(.horizontal)
                  .overlay(
@@ -72,6 +48,97 @@ struct SkipView: View {
                          .stroke(.gray, lineWidth: 1)
                          .opacity(0.15)
                  )
+                VStack(spacing: 0) {
+                    VStack(spacing: 0) {
+                        HStack {
+                            Text("Search")
+                            Spacer()
+                            TextField("Name", text: $saveFileStore.search)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .padding(.vertical, 2)
+                                .multilineTextAlignment(.trailing)
+                                .onChange(of: saveFileStore.search) { _ in
+                                    do {
+                                        try saveFileStore.updateSaveFiles()
+                                    } catch {
+                                    }
+                                }
+                        }.padding(.vertical)
+                    }.padding(.horizontal)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(.gray, lineWidth: 1)
+                                .opacity(0.15)
+                        )
+                }.padding(.top)
+                VStack(spacing: 0) {
+                    VStack (spacing: 0) {
+                        Table(saveFileStore.saveFiles, selection: $saveFileStore.selectedSaveFileId) {
+                            TableColumn("Name", value: \.name)
+                        }
+                        Divider()
+                        Section {
+                            HStack {
+                                Button {
+                                    if saveFileStore.selectedSaveFileId != nil {
+                                        do {
+                                            try saveFileStore.removeSelectedSaveFile()
+                                        } catch {
+                                            alertMessage = error.localizedDescription
+                                            alert = true
+                                        }
+                                    }
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundColor(.gray)
+                                }
+                                .padding(.leading, 8)
+                                .contentShape(Rectangle())
+                                .buttonStyle(.plain)
+                                Divider()
+                                    .frame(height: 16)
+                                    .padding(.vertical, 4)
+                                Spacer()
+                            }
+                        }
+                    }.overlay(
+                         RoundedRectangle(cornerRadius: 6)
+                             .stroke(.gray, lineWidth: 1)
+                             .opacity(0.15)
+                     )
+                }.padding(.top)
+                .frame(height: 300)
+                if let selection = saveFileStore.selectedSaveFileId {
+                    let selectedFile = saveFileStore.saveFiles.first(where: { $0.id == saveFileStore.selectedSaveFileId })
+                    VStack(spacing: 0) {
+                        Group {
+                            VStack(spacing: 0) {
+                                HStack {
+                                    Text("Selected series configuration")
+                                        .fontWeight(.bold)
+                                    Spacer()
+                                }.padding(.vertical)
+                                Divider()
+                                HStack {
+                                    Text("Name")
+                                    Spacer()
+                                    Text(selectedFile?.name ?? "")
+                                }.padding(.vertical)
+                                Divider()
+                                HStack {
+                                    Text("Series path")
+                                    Spacer()
+                                    Directory(path: .constant(saveFileStore.saveFiles.first(where: { $0.id == selection })?.path ?? ""), openInFinder: true, mode: .none)
+                                }.padding(.vertical)
+                            }.padding(.horizontal)
+                             .overlay(
+                                 RoundedRectangle(cornerRadius: 6)
+                                     .stroke(.gray, lineWidth: 1)
+                                     .opacity(0.15)
+                             )
+                        }.padding(.bottom)
+                    }.padding(.top)
+                }
             }.padding()
             Spacer()
             Divider()
@@ -84,7 +151,7 @@ struct SkipView: View {
                 }
                 Button {
                     do {
-                        try appViewModel.startSkipper(configData: saveFileStore.selectedSaveFile.getAgentConfigData())
+                        try saveFileStore.sendSaveFileToAgent()
                         NSApplication.shared.keyWindow?.close()
                     } catch {
                         alertMessage = error.localizedDescription
@@ -105,6 +172,6 @@ struct SkipView: View {
 
 struct SkipView_Previews: PreviewProvider {
     static var previews: some View {
-        SkipView(appViewModel: AppViewModel())
+        SkipView(saveFileStore: SaveFileStore())
     }
 }
